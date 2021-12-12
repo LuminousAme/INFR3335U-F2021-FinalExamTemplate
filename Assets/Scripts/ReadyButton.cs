@@ -13,6 +13,9 @@ public class ReadyButton : MonoBehaviourPun
 
     public bool readyFlag = false;
 
+    public delegate void ClickUpdated(bool value);
+    public static event ClickUpdated ReadyClickedEvent;
+
     public void SetCurrentPlayer(GameObject playerListContent)
     {
         TMP_Text[] playerInfoList = playerListContent.GetComponentsInChildren<TMP_Text>();
@@ -32,5 +35,7 @@ public class ReadyButton : MonoBehaviourPun
 
         ready.SetActive(readyFlag);
         unready.SetActive(!readyFlag);
+
+        ReadyClickedEvent?.Invoke(readyFlag);
     }
 }

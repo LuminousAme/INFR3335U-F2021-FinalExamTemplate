@@ -29,11 +29,52 @@ public class Launcher : MonoBehaviourPunCallbacks
     public GameObject readyButton;
     public Transform ButtonOrganizer;
 
+    private List<GameObject> playerListingList;
+    private List<bool> playerReady;
+    private int playerIndex;
+
     private void Start()
     {
         lobbyPanel.SetActive(true);
         roomPanel.SetActive(false);
         PhotonNetwork.AutomaticallySyncScene = true;
+        playerListingList = new List<GameObject>();
+        playerReady = new List<bool>();
+    }
+
+    private void LateUpdate()
+    {
+        //iterate over all the players in the photon list
+        int i = 0;
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+
+            object isReady;
+            if (player.CustomProperties.TryGetValue("IsReady", out isReady))
+            {
+                playerListingList[i].GetComponent<PlayerListing>().UpdateFromServer((bool)isReady);
+                playerReady[i] = (bool)isReady;
+            }
+
+            i++;
+        }
+
+        //if this is the first player check if the start button should be interactable now
+        if (playerIndex == 0)
+        {
+            //get a list of all the players
+            Player[] players = PhotonNetwork.PlayerList;
+
+            //check if all the players are ready
+            for (i = 0; i < players.Length; i++)
+            {
+                //check if the start button should be interactable
+                startButton.interactable = playerReady[i];
+
+                //if we find one false break
+                if (!playerReady[i]) break;
+            }
+        }
     }
 
     public void CreateRoom()
@@ -63,14 +104,18 @@ public class Launcher : MonoBehaviourPunCallbacks
         playerCount.text = "" + players.Length + " Players";
 
         //spawn in the list of players
-        for(int i = 0; i < players.Length; i++)
+        for (int i = 0; i < players.Length; i++)
         {
             //create all of the player in the scroll view
-            Instantiate(playerListing, playerListContent).GetComponent<PlayerListing>().SetPlayerInfo(players[i]);
+            GameObject newObj = Instantiate(playerListing, playerListContent);
+            newObj.GetComponent<PlayerListing>().SetPlayerInfo(players[i], i, i == players.Length - 1);
+            playerListingList.Add(newObj);
 
             //only allow the start button to be interactable for the first player
-            startButton.interactable = (i == 0);
+            startButton.interactable = false;
             SettingsButton.interactable = (i == 0);
+            playerIndex = i;
+            playerReady.Add(false);
         }
 
         //spawn in the ready button
@@ -95,7 +140,10 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
-        Instantiate(playerListing, playerListContent).GetComponent<PlayerListing>().SetPlayerInfo(newPlayer);
+        GameObject newObj = Instantiate(playerListing, playerListContent);
+        newObj.GetComponent<PlayerListing>().SetPlayerInfo(newPlayer, playerListingList.Count, false);
+        playerListingList.Add(newObj);
+        playerReady.Add(false);
 
         //get a list of all the players
         Player[] players = PhotonNetwork.PlayerList;
@@ -117,4 +165,30 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         PhotonNetwork.LoadLevel("Arena");
     }
+
+    [PunRPC]
+    private void UpdateReadyFlag(bool value, int thisIndex)
+    {
+        //update the readied
+        playerReady[thisIndex] = value;
+
+        //if this is the first player check if the start button should be interactable now
+        if (playerIndex == 0)
+        {
+            //get a list of all the players
+            Player[] players = PhotonNetwork.PlayerList;
+
+            //check if all the players are ready
+            for (int i = 0; i < players.Length; i++)
+            {
+                //check if the start button should be interactable
+                startButton.interactable = playerReady[i];
+
+                //if we find one false break
+                if (!playerReady[i]) break;
+            }
+        }
+    }
+
+
 }
