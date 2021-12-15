@@ -59,8 +59,8 @@ public class CharacterMovement : MonoBehaviour
             cc.Move(newMove * moveSpeed * Time.deltaTime);
 
             //the direction the neck and camera should rotate
-            yaw = lookJoyStick.Horizontal * lookSpeed * (60.0f) * Time.deltaTime;
-            pitch -= lookJoyStick.Vertical * verticalLookSpeed;
+            yaw = lookJoyStick.Horizontal * lookSpeed * Time.deltaTime;
+            pitch -= lookJoyStick.Vertical * verticalLookSpeed * Time.deltaTime;
             pitch = Mathf.Clamp(pitch, -pitchLimit, pitchLimit);
 
             //rotate the character

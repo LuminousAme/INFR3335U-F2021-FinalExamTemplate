@@ -120,10 +120,10 @@ MonoBehaviour:
   moveSpeed: 5
   lookJoyStick: {fileID: 0}
   lookAt: {fileID: 420625776}
-  lookSpeed: 0.25
-  verticalLookSpeed: 0.05
+  lookSpeed: 100
+  verticalLookSpeed: 1.5
   pitchLimit: 0.5
-  LookAtTarget: {fileID: 0}
+  LookAtTarget: {fileID: 420625776}
 --- !u!1001 &8578762896113237725
 PrefabInstance:
   m_ObjectHideFlags: 0
